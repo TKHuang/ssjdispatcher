@@ -194,6 +194,7 @@ func CreateK8sJob(inputURL string, jobConfig JobConfig) (*JobInfo, error) {
 	regionIf, _ := GetValueFromJSON(credBytes, []string{"AWS", "region"})
 	accessKeyIf, _ := GetValueFromJSON(credBytes, []string{"AWS", "aws_access_key_id"})
 	secretKeyIf, _ := GetValueFromJSON(credBytes, []string{"AWS", "aws_secret_access_key"})
+	s3_endpointIf, _ := GetValueFromJSON(credBytes, []string{"AWS", "s3_endpoint"})
 
 	awsRegion := ""
 	if regionIf != nil {
@@ -206,6 +207,11 @@ func CreateK8sJob(inputURL string, jobConfig JobConfig) (*JobInfo, error) {
 	awsSecretKey := ""
 	if secretKeyIf != nil {
 		awsSecretKey = secretKeyIf.(string)
+	}
+
+	awsS3Endpoint := ""
+	if s3_endpointIf != nil {
+		awsS3Endpoint = s3_endpointIf.(string)
 	}
 
 	configBytes, err := json.Marshal(jobConfig.ImageConfig)
@@ -315,6 +321,10 @@ func CreateK8sJob(inputURL string, jobConfig JobConfig) (*JobInfo, error) {
 								{
 									Name:  "CONFIG_FILE",
 									Value: configString,
+								},
+								{
+									Name:  "AWS_ENDPOINT",
+									Value: awsS3Endpoint,
 								},
 							},
 							VolumeMounts: []k8sv1.VolumeMount{},

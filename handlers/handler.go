@@ -183,7 +183,12 @@ func getObjectsFromSQSMessage(msgBody string) []string {
 		return objectPaths
 	}
 
-	msgBody2 := msgBodyInf.(string)
+	msgBody2, err := json.Marshal(msgBodyInf)
+	if err != nil {
+		glog.Infoln("The message is not the one from the bucket POST/PUT events. Detail ", err)
+		return objectPaths
+	}
+	// msgBody2 := msgBodyInf.(string)
 	if err := json.Unmarshal([]byte(msgBody2), &mapping); err != nil {
 		glog.Infoln("The message is not the one from the bucket POST/PUT events. Detail ", err)
 		return objectPaths

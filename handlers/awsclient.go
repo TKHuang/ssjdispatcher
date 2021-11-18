@@ -14,6 +14,7 @@ type AWSCredentials struct {
 	region             string
 	awsAccessKeyID     string
 	awsSecretAccessKey string
+	sqs_endpoint       string
 }
 
 // NewSQSClient create new SQSAPI client
@@ -24,7 +25,9 @@ func NewSQSClient() (sqsiface.SQSAPI, error) {
 	}
 
 	if cred.region != "" && cred.awsAccessKeyID != "" && cred.awsSecretAccessKey != "" {
-		config := aws.NewConfig().WithRegion(cred.region).WithCredentials(credentials.NewStaticCredentials(cred.awsAccessKeyID, cred.awsSecretAccessKey, ""))
+		config := aws.NewConfig().WithRegion(cred.region).
+			WithCredentials(credentials.NewStaticCredentials(cred.awsAccessKeyID, cred.awsSecretAccessKey, "")).
+			WithEndpoint(cred.sqs_endpoint)
 		return sqs.New(session.New(config)), nil
 	} else {
 		sess, _ := session.NewSession()
@@ -57,6 +60,12 @@ func loadCredentialFromConfigFile(path string) (*AWSCredentials, error) {
 		glog.Info("Can not read aws secret key from credential file. Gonna use attached service account")
 	} else {
 		credentials.awsSecretAccessKey = awsSecret.(string)
+	}
+
+	if awsSQSEndpoint, err := GetValueFromJSON(jsonBytes, []string{"AWS", "sqs_endpoint"}); err != nil {
+		glog.Info("Can not read endpoint from credential file. Gonna use attached service account")
+	} else {
+		credentials.sqs_endpoint = awsSQSEndpoint.(string)
 	}
 
 	return credentials, nil
